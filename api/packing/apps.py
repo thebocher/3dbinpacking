@@ -1,5 +1,8 @@
 from django.apps import AppConfig
 from django.core.management import call_command
+# from django.contrib.auth.models import User
+#
+# from rest_framework.authtoken.models import Token
 
 import MySQLdb
 
@@ -38,3 +41,9 @@ class PackingConfig(AppConfig):
             call_command('create_pallete_types')
         except:
             print('packing.apps.PackingConfig.ready: Failed to call command create_pallete_types')
+
+        try:
+            call_command('create_token', silent=True)
+        except:
+            print('packing.apps.PackingConfig.ready: Failed to call command create_token')
+
