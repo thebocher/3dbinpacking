@@ -46,9 +46,8 @@ INSTALLED_APPS = [
     'packing',
 
     'rest_framework',
-    'rest_framework.authtoken',
     'drf_spectacular',
-    'drf_spectacular_sidecar',
+    'drf_spectacular_sidecar'
 ]
 
 MIDDLEWARE = [
@@ -146,9 +145,6 @@ APPEND_SLASH = False
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'EXCEPTION_HANDLER': 'rest_framework.views.exception_handler',
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication'
-    ],
 }
 
 # drf-spectacular config

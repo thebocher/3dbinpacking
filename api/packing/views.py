@@ -4,8 +4,6 @@ from rest_framework import viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.exceptions import status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-
 from django.http import Http404
 
 from .models import Item, Pallete, PalleteType
@@ -45,7 +43,6 @@ class CreateListDestroyViewset(mixins.CreateModelMixin,
 class PalleteTypeViewSet(CreateListDestroyViewset):
     queryset = PalleteType.objects.all()
     serializer_class = PalleteTypeSerializer
-    permission_classes = [IsAuthenticated]
 
 
 @extend_schema_view(
@@ -68,11 +65,11 @@ class PalleteTypeViewSet(CreateListDestroyViewset):
             'с таким же типом, как и выбранная, то они стают неактивными'
         )
     )
+
 )
 class PalleteViewSet(CreateListDestroyViewset):
     queryset = Pallete.objects.all()
     serializer_class = PalleteSerializer
-    permission_classes = [IsAuthenticated]
 
     @action(
         detail=False, 
@@ -131,7 +128,6 @@ class ItemViewSet(CreateListDestroyViewset):
     """"""
     queryset = Item.objects.all()
     serializer_class = ItemResponseSerializer
-    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         # validating
