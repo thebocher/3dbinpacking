@@ -11,7 +11,6 @@ services:
     build: .
     ports:
       - "8096:8000"
-    restart: always
     volumes:
       - ./api:/var/api
     env_file: 
