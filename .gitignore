@@ -12,3 +12,6 @@ debug.log
 test*
 
 env/
+.env
+.env.dev
+example2.py
