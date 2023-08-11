@@ -51,11 +51,8 @@ class PalletPacker:
 
     def pack(self):
         self.packer.pack(
-            bigger_first=True,
-            distribute_items=True,
             fix_point=True,
-            check_stable=True,
-            support_surface_ratio=0.75,
+            check_stable=False,
             number_of_decimals=2
         )
         fitted_items = self.bin.items
