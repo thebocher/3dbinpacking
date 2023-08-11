@@ -25,7 +25,7 @@ class Pallete(models.Model):
 
 
 class Item(models.Model):
-    external_id = models.IntegerField()
+    external_id = models.CharField(max_length=100)
     pallete = models.ForeignKey(Pallete, on_delete=models.CASCADE)
     length = models.FloatField()
     width = models.FloatField()
