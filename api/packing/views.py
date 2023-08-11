@@ -157,6 +157,7 @@ class ItemViewSet(CreateListDestroyViewset):
         palletes = (
             Pallete.objects
                 .filter(active=True, type__name=pallete_type_name)
+                .select_related('type')
                 .prefetch_related('item_set')
         )
 
@@ -188,7 +189,7 @@ class ItemViewSet(CreateListDestroyViewset):
             raise ItemDoesntFitToPallete(pallete.id)
 
         # saving item 
-        item_model_instance = Item.objects.create(
+        item_model_instance = Item(
             external_id=item['external_id'],
             pallete=pallete,
             length=item['length'],
@@ -209,6 +210,7 @@ class ItemViewSet(CreateListDestroyViewset):
             complete_edge_b=item['complete_edge_b'],
             xnc_need=item['xnc_need'],
         )
+        item_model_instance.save()
         item_response_serializer = ItemResponseSerializer(
             instance=item_model_instance
         )

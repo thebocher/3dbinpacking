@@ -30,7 +30,7 @@ class ItemRequestSerializer(serializers.ModelSerializer):
 
 
 class ItemResponseSerializer(serializers.ModelSerializer):
-    pallete_type = serializers.IntegerField(source='pallete.id')
+    pallete_type = serializers.IntegerField(source='pallete.type.id')
 
     class Meta:
         model = Item
