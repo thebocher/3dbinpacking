@@ -42,7 +42,7 @@ class PalletPacker:
         self.bin.fit_items = np.append(
             self.bin.fit_items, np.array(
                 [[
-                    x, x+w, y, y+h, z, z+d
+                    x, x+w, y, y+h, 0, z+d
                 ]]
             ),
             axis=0,
