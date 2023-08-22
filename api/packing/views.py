@@ -200,7 +200,7 @@ class ItemViewSet(CreateListDestroyViewset):
                 whd = placed_item.length, placed_item.width, placed_item.height
                 weight = placed_item.weight
                 position = placed_item.x, placed_item.y, placed_item.z
-                rotation_type = 2 if placed_item.rotate else 0
+                rotation_type = 1 if placed_item.rotate else 0
                 packer.add_existing_item(whd, weight, position, rotation_type)
 
             new_item_whd = item['length'], item['width'], item['height']
