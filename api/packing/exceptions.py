@@ -31,7 +31,7 @@ class PalleteWillBeOverweight(APIException):
             self, pallete_id, pallete_current_weight, item_weight, 
             pallete_max_weight
         ):
-        self.default_detail = (
+        self.detail = (
             f'Pallete(id={pallete_id}) will be overweight. '
             f'Pallete current weight {pallete_current_weight}, '
             f'item weight {item_weight}, '
