@@ -14,7 +14,10 @@ from .serializers import (
     PalleteSerializer, ActivePalleteSerializer,
     PalleteTypeSerializer,
 )
-from .exceptions import ActivePalleteWithTypeAbsent, ItemDoesntFitToPallete
+from .exceptions import (
+    ActivePalleteWithTypeAbsent, ItemDoesntFitToPallete, 
+    PalleteWillBeOverweight
+)
 
 from packing.pallet_packer import PalletPacker
 
@@ -165,6 +168,14 @@ class ItemViewSet(CreateListDestroyViewset):
             raise ActivePalleteWithTypeAbsent(pallete_type_name)
 
         pallete = palletes.first()
+        pallete_current_weight = pallete.get_current_weight()
+
+        if pallete.will_be_overweight(
+                item['weight'], current_weight=pallete_current_weight):
+            raise PalleteWillBeOverweight(
+                pallete.id, pallete_current_weight, item['weight'],
+                pallete.max_weight
+            )
 
         item_model_instance = Item(
             external_id=item['external_id'],

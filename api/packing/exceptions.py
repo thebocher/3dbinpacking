@@ -21,3 +21,20 @@ class ItemDoesntFitToPallete(APIException):
             f'Item doesn\'t fit to pallete with '
             f'id {pallete_id}'
         )
+
+
+class PalleteWillBeOverweight(APIException):
+    status_code = status.HTTP_406_NOT_ACCEPTABLE
+    default_code = 'pallete_will_be_overweight'
+
+    def __init__(
+            self, pallete_id, pallete_current_weight, item_weight, 
+            pallete_max_weight
+        ):
+        self.default_detail = (
+            f'Pallete(id={pallete_id}) will be overweight. '
+            f'Pallete current weight {pallete_current_weight}, '
+            f'item weight {item_weight}, '
+            f'pallete max weight {pallete_max_weight}'
+        )
+

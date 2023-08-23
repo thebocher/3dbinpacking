@@ -23,6 +23,17 @@ class Pallete(models.Model):
     status = models.CharField(choices=STATUS_CHOICES, max_length=20)
     active = models.BooleanField(default=False)
 
+    def get_current_weight(self):
+        return self.item_set.aggregate(
+            current_weight=models.Sum('weight')
+        )['current_weight']
+
+    def will_be_overweight(self, item_weight, current_weight=None):
+        if current_weight is None:
+            current_weight = self.get_current_weight()
+
+        return current_weight + item_weight > self.max_weight
+
 
 class Item(models.Model):
     external_id = models.CharField(max_length=100)
