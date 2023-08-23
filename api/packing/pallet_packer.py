@@ -53,7 +53,7 @@ class PalletPacker:
         self.packer.pack(
             fix_point=True,
             check_stable=True,
-            support_surface_ratio=.5,
+            support_surface_ratio=.75,
             number_of_decimals=2
         )
         fitted_items = self.bin.items
