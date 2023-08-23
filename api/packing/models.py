@@ -26,7 +26,7 @@ class Pallete(models.Model):
     def get_current_weight(self):
         return self.item_set.aggregate(
             current_weight=models.Sum('weight')
-        )['current_weight']
+        )['current_weight'] or 0
 
     def will_be_overweight(self, item_weight, current_weight=None):
         if current_weight is None:
