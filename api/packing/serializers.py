@@ -25,7 +25,8 @@ class ItemRequestSerializer(serializers.ModelSerializer):
         fields = (
             'external_id', 'length', 'width', 'height', 'weight', 'need_edge_l',
             'complete_edge_l', 'need_edge_t', 'complete_edge_t', 'need_edge_r',
-            'complete_edge_r', 'need_edge_b', 'complete_edge_b', 'xnc_need'
+            'complete_edge_r', 'need_edge_b', 'complete_edge_b', 'xnc_need',
+            'from_temp'
         )
 
 

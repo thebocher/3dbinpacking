@@ -131,7 +131,6 @@ class PalleteViewSet(CreateListDestroyViewset):
     )
 )
 class ItemViewSet(CreateListDestroyViewset):
-    """"""
     queryset = Item.objects.all()
     serializer_class = ItemResponseSerializer
     permission_classes = [IsAuthenticated]
@@ -146,15 +145,19 @@ class ItemViewSet(CreateListDestroyViewset):
         sides = ['r', 't', 'l', 'b']
         pallete_type_name = 'chpu'
         
+        if item['xnc_need']:
+            pallete_type_name = 'warehouse'
+
+        if item['length'] > 1100 or item['width'] > 600:
+            pallete_type_name = 'temp'
+
         for side in sides:
             need_edge = item[f'need_edge_{side}']
             complete_edge = item[f'complete_edge_{side}']
 
             if need_edge and not complete_edge:
                 pallete_type_name = 'return'
-
-        if item['xnc_need'] and pallete_type_name != 'return':
-            pallete_type_name = 'warehouse'
+                break
 
         # getting appropriate active pallete
         palletes = (
@@ -231,6 +234,13 @@ class ItemViewSet(CreateListDestroyViewset):
 
             # saving item 
             item_model_instance.save()
+
+        if item.get('from_temp'):
+            temp_pallete = Pallete.objects.get(type__name='temp')
+            temp_pallete_item = temp_pallete.item_set.filter(
+                external_id=item['external_id']
+            )
+            temp_pallete_item.delete()
 
         item_response_serializer = ItemResponseSerializer(
             instance=item_model_instance

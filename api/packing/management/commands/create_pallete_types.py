@@ -9,3 +9,4 @@ class Command(BaseCommand):
         PalleteType.objects.get_or_create(name='return')
         PalleteType.objects.get_or_create(name='warehouse')
         PalleteType.objects.get_or_create(name='chpu')
+        PalleteType.objects.get_or_create(name='temp')

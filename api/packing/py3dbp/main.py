@@ -392,7 +392,9 @@ class Packer:
             return
 
         for axis in range(0, 3):
-            items_in_bin = bin.items
+            # try to place as low as possible
+            items_in_bin = sorted(bin.items, key=lambda i: i.position[2])
+
             for ib in items_in_bin:
                 pivot = [0, 0, 0]
                 w, h, d = ib.getDimension()

@@ -55,4 +55,5 @@ class Item(models.Model):
     need_edge_b = models.BooleanField()
     complete_edge_b = models.BooleanField()
     xnc_need = models.BooleanField()
+    from_temp = models.BooleanField()
 
