@@ -148,7 +148,8 @@ class ItemViewSet(CreateListDestroyViewset):
         if item['xnc_need']:
             pallete_type_name = 'warehouse'
 
-        if item['length'] > 1100 or item['width'] > 600:
+        if ((item['length'] > 1100 or item['width'] > 600) 
+                and not item.get('temp')):
             pallete_type_name = 'temp'
 
         for side in sides:
