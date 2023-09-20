@@ -144,12 +144,13 @@ class ItemViewSet(CreateListDestroyViewset):
         # getting pallete_type_name, based on item attrs
         sides = ['r', 't', 'l', 'b']
         pallete_type_name = 'chpu'
+        item_from_temp = item.get('from_temp')
         
         if item['xnc_need']:
             pallete_type_name = 'warehouse'
 
         if ((item['length'] > 1100 or item['width'] > 600) 
-                and not item.get('from_temp')):
+                and not item_from_temp):
             pallete_type_name = 'temp'
 
         for side in sides:
@@ -197,6 +198,7 @@ class ItemViewSet(CreateListDestroyViewset):
             complete_edge_r=item['complete_edge_r'],
             complete_edge_b=item['complete_edge_b'],
             xnc_need=item['xnc_need'],
+            from_temp=item_from_temp,
         )
 
         if pallete_type_name == 'return':
@@ -236,7 +238,7 @@ class ItemViewSet(CreateListDestroyViewset):
             # saving item 
             item_model_instance.save()
 
-        if item.get('from_temp'):
+        if item_from_temp:
             temp_pallete = Pallete.objects.get(type__name='temp')
             temp_pallete_item = temp_pallete.item_set.filter(
                 external_id=item['external_id']
