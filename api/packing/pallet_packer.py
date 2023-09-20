@@ -49,10 +49,10 @@ class PalletPacker:
         )
         self.bin.items.append(item)
 
-    def pack(self):
+    def pack(self, check_stable=True):
         self.packer.pack(
             fix_point=True,
-            check_stable=True,
+            check_stable=check_stable,
             support_surface_ratio=.75,
             number_of_decimals=2
         )
