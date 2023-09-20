@@ -226,7 +226,7 @@ class ItemViewSet(CreateListDestroyViewset):
             packer_item = packer.add_new_item(new_item_whd, new_item_weight)
             
             check_stable = True
-            if pallete.type == 'temp':
+            if pallete_type_name == 'temp':
                 check_stable = False
 
             _, unfitted_items = packer.pack(
