@@ -136,12 +136,12 @@ class ItemViewSet(CreateListDestroyViewset):
     permission_classes = [IsAuthenticated]
 
     @staticmethod
-    def try_put_item(pallete_model, item_data):
-        pallete_whd = pallete_model.length, pallete_model.width, pallete_model.height
-        pallete_max_weight = pallete_model.max_weight
+    def try_put_item(pallete, item: Item):
+        pallete_whd = pallete.length, pallete.width, pallete.height
+        pallete_max_weight = pallete.max_weight
         packer = PalletPacker(pallete_whd, pallete_max_weight)
 
-        for placed_item in pallete_model.item_set.all():
+        for placed_item in pallete.item_set.all():
             whd = (
                 placed_item.length,
                 placed_item.width,
@@ -155,9 +155,9 @@ class ItemViewSet(CreateListDestroyViewset):
             )
 
         new_item_whd = (
-            item_data['length'], item_data['width'], item_data['height']
+            item.length, item.width, item.height
         )
-        new_item_weight = item_data['weight']
+        new_item_weight = item.weight
 
         packer_item = packer.add_new_item(
             new_item_whd, new_item_weight
@@ -166,7 +166,7 @@ class ItemViewSet(CreateListDestroyViewset):
         _, unfitted_items = packer.pack()
 
         if unfitted_items:
-            raise ItemDoesntFitToPallete(pallete_model.id)
+            raise ItemDoesntFitToPallete(pallete.id)
 
         return packer_item.position, packer_item.rotation_type
 
