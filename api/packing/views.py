@@ -217,6 +217,7 @@ class ItemViewSet(CreateListDestroyViewset):
 
     def try_put_top_item_from_temp_pallete(self, temp_pallete):
         top_item = temp_pallete.get_top_item()
+        top_item.from_temp = True
 
         if top_item is None:
             return
@@ -274,21 +275,25 @@ class ItemViewSet(CreateListDestroyViewset):
             # saving item 
             item.save()
 
-        temp_pallete = Pallete.objects.get(type__name='temp')
 
-        # deleting item, which was placed from temp pallete
-        if item.from_temp:
-            temp_pallete_item = temp_pallete.item_set.filter(
-                external_id=item.external_id
+        if pallete.type.name != 'temp':
+            temp_pallete = Pallete.objects.get(
+                type__name='temp', active=True
             )
-            temp_pallete_item.delete()
 
-        # trying to put item from temp pallete to other
-        try:
-            temp_item_id = self.try_put_top_item_from_temp_pallete(temp_pallete)
-            item.can_put_temp_item_id = temp_item_id
-        except:
-            pass
+            # deleting item, which was placed from temp pallete
+            if item.from_temp:
+                temp_pallete_item = temp_pallete.item_set.filter(
+                    external_id=item.external_id
+                )
+                temp_pallete_item.delete()
+
+            # trying to put item from temp pallete to other
+            try:
+                temp_item_id = self.try_put_top_item_from_temp_pallete(temp_pallete)
+                item._can_put_temp_item_id = temp_item_id
+            except:
+                pass
 
         item_response_serializer = ItemResponseSerializer(
             instance=item
