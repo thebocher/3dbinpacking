@@ -207,40 +207,50 @@ class ItemViewSet(CreateListDestroyViewset):
             item_model_instance.z = 0
             item_model_instance.rotate = 0
         else:
-            # putting previous items and new item to packer and getting position
-            # coordinates
-            pallete_whd = pallete.length, pallete.width, pallete.height
-            pallete_max_weight = pallete.max_weight
-            packer = PalletPacker(pallete_whd, pallete_max_weight)
-
-            for placed_item in pallete.item_set.all():
-                whd = placed_item.length, placed_item.width, placed_item.height
-                weight = placed_item.weight
-                position = placed_item.x, placed_item.y, placed_item.z
-                rotation_type = 1 if placed_item.rotate else 0
-                packer.add_existing_item(whd, weight, position, rotation_type)
-
-            new_item_whd = item['length'], item['width'], item['height']
-            new_item_weight = item['weight']
-
-            packer_item = packer.add_new_item(new_item_whd, new_item_weight)
-            
-            check_stable = True
             if pallete_type_name == 'temp':
-                check_stable = False
+                # putting item on top of the highest item
+                # and in the center of pallete
+                top_item = pallete.get_top_item()
+                item_model_instance.x = (pallete.length - item['length']) / 2
+                item_model_instance.y = (pallete.width - item['width']) / 2
+                item_model_instance.z = top_item.z + top_item.height
+            else:
+                # putting previous items and new item to packer and getting 
+                # position coordinates
+                pallete_whd = pallete.length, pallete.width, pallete.height
+                pallete_max_weight = pallete.max_weight
+                packer = PalletPacker(pallete_whd, pallete_max_weight)
 
-            _, unfitted_items = packer.pack(
-                check_stable=check_stable
-            )
+                for placed_item in pallete.item_set.all():
+                    whd = (
+                        placed_item.length,
+                        placed_item.width,
+                        placed_item.height
+                    )
+                    weight = placed_item.weight
+                    position = placed_item.x, placed_item.y, placed_item.z
+                    rotation_type = 1 if placed_item.rotate else 0
+                    packer.add_existing_item(
+                        whd, weight, position, rotation_type
+                    )
 
-            if unfitted_items:
-                raise ItemDoesntFitToPallete(pallete.id)
+                new_item_whd = item['length'], item['width'], item['height']
+                new_item_weight = item['weight']
 
-            x, y, z = packer_item.position
-            item_model_instance.x = x
-            item_model_instance.y = y
-            item_model_instance.z = z
-            item_model_instance.rotate = bool(packer_item.rotation_type)
+                packer_item = packer.add_new_item(
+                    new_item_whd, new_item_weight
+                )
+                
+                _, unfitted_items = packer.pack()
+
+                if unfitted_items:
+                    raise ItemDoesntFitToPallete(pallete.id)
+
+                x, y, z = packer_item.position
+                item_model_instance.x = x
+                item_model_instance.y = y
+                item_model_instance.z = z
+                item_model_instance.rotate = bool(packer_item.rotation_type)
 
             # saving item 
             item_model_instance.save()

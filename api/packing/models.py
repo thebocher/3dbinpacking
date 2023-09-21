@@ -34,6 +34,11 @@ class Pallete(models.Model):
 
         return current_weight + item_weight > self.max_weight
 
+    def get_top_item(self): 
+        # used for temp pallete
+        items = self.item_set.objects.order_by('z')
+        return items.last()
+
 
 class Item(models.Model):
     external_id = models.CharField(max_length=100)
