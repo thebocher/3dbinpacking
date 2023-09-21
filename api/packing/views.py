@@ -135,33 +135,65 @@ class ItemViewSet(CreateListDestroyViewset):
     serializer_class = ItemResponseSerializer
     permission_classes = [IsAuthenticated]
 
-    def create(self, request, *args, **kwargs):
-        # validating
-        serializer = ItemRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        item = serializer.validated_data
+    @staticmethod
+    def try_put_item(pallete_model, item_data):
+        pallete_whd = pallete_model.length, pallete_model.width, pallete_model.height
+        pallete_max_weight = pallete_model.max_weight
+        packer = PalletPacker(pallete_whd, pallete_max_weight)
 
-        # getting pallete_type_name, based on item attrs
-        sides = ['r', 't', 'l', 'b']
-        pallete_type_name = 'chpu'
-        item_from_temp = item.get('from_temp')
+        for placed_item in pallete_model.item_set.all():
+            whd = (
+                placed_item.length,
+                placed_item.width,
+                placed_item.height
+            )
+            weight = placed_item.weight
+            position = placed_item.x, placed_item.y, placed_item.z
+            rotation_type = 1 if placed_item.rotate else 0
+            packer.add_existing_item(
+                whd, weight, position, rotation_type
+            )
+
+        new_item_whd = (
+            item_data['length'], item_data['width'], item_data['height']
+        )
+        new_item_weight = item_data['weight']
+
+        packer_item = packer.add_new_item(
+            new_item_whd, new_item_weight
+        )
         
-        if item['xnc_need']:
+        _, unfitted_items = packer.pack()
+
+        if unfitted_items:
+            raise ItemDoesntFitToPallete(pallete_model.id)
+
+        return packer_item.position, packer_item.rotation_type
+
+    @staticmethod
+    def get_pallete_type_name(item: Item):
+        pallete_type_name = 'chpu'
+        sides = ['r', 't', 'l', 'b']
+
+        if item.xnc_need:
             pallete_type_name = 'warehouse'
 
-        if ((item['length'] > 1100 or item['width'] > 600) 
-                and not item_from_temp):
+        if ((item.length > 1100 or item.width > 600) 
+                and not item.from_temp):
             pallete_type_name = 'temp'
 
         for side in sides:
-            need_edge = item[f'need_edge_{side}']
-            complete_edge = item[f'complete_edge_{side}']
+            need_edge = getattr(item, f'need_edge_{side}')
+            complete_edge = getattr(item, f'complete_edge_{side}')
 
             if need_edge and not complete_edge:
                 pallete_type_name = 'return'
                 break
 
-        # getting appropriate active pallete
+        return pallete_type_name
+
+    def get_pallete(self, item: Item):
+        pallete_type_name = self.get_pallete_type_name(item)
         palletes = (
             Pallete.objects
                 .filter(active=True, type__name=pallete_type_name)
@@ -176,94 +208,76 @@ class ItemViewSet(CreateListDestroyViewset):
         pallete_current_weight = pallete.get_current_weight()
 
         if pallete.will_be_overweight(
-                item['weight'], current_weight=pallete_current_weight):
+                item.weight, current_weight=pallete_current_weight):
             raise PalleteWillBeOverweight(
-                pallete.id, pallete_current_weight, item['weight'],
+                pallete.id, pallete_current_weight, item.weight,
                 pallete.max_weight
             )
+        return pallete
 
-        item_model_instance = Item(
-            external_id=item['external_id'],
-            pallete=pallete,
-            length=item['length'],
-            width=item['width'],
-            height=item['height'],
-            weight=item['weight'],
-            need_edge_l=item['need_edge_l'],
-            need_edge_t=item['need_edge_t'],
-            need_edge_r=item['need_edge_r'],
-            need_edge_b=item['need_edge_b'],
-            complete_edge_l=item['complete_edge_l'],
-            complete_edge_t=item['complete_edge_t'],
-            complete_edge_r=item['complete_edge_r'],
-            complete_edge_b=item['complete_edge_b'],
-            xnc_need=item['xnc_need'],
-            from_temp=item_from_temp,
-        )
+    def try_put_top_item_from_temp_pallete(self, temp_pallete):
+        top_item = temp_pallete.get_top_item()
+        pallete = self.get_pallete(top_item)
 
-        if pallete_type_name == 'return':
-            item_model_instance.x = 0
-            item_model_instance.y = 0
-            item_model_instance.z = 0
-            item_model_instance.rotate = 0
+        try:
+            self.try_put_item(pallete, top_item)
+            return top_item.id
+        except:
+            return
+
+    def create(self, request, *args, **kwargs):
+        # validating
+        serializer = ItemRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        item: Item = serializer.instance
+
+        pallete = self.get_pallete(item)
+
+        if pallete.type.name == 'return':
+            item.x = 0
+            item.y = 0
+            item.z = 0
+            item.rotate = 0
         else:
-            if pallete_type_name == 'temp':
+            if pallete.type.name == 'temp':
                 # putting item on top of the highest item
                 # and in the center of pallete
                 top_item = pallete.get_top_item()
-                item_model_instance.x = (pallete.length - item['length']) / 2
-                item_model_instance.y = (pallete.width - item['width']) / 2
-                item_model_instance.z = top_item.z + top_item.height
+                item.x = (pallete.length - item.length) / 2
+                item.y = (pallete.width - item.width) / 2
+                item.z = top_item.z + top_item.height
             else:
                 # putting previous items and new item to packer and getting 
                 # position coordinates
-                pallete_whd = pallete.length, pallete.width, pallete.height
-                pallete_max_weight = pallete.max_weight
-                packer = PalletPacker(pallete_whd, pallete_max_weight)
-
-                for placed_item in pallete.item_set.all():
-                    whd = (
-                        placed_item.length,
-                        placed_item.width,
-                        placed_item.height
-                    )
-                    weight = placed_item.weight
-                    position = placed_item.x, placed_item.y, placed_item.z
-                    rotation_type = 1 if placed_item.rotate else 0
-                    packer.add_existing_item(
-                        whd, weight, position, rotation_type
-                    )
-
-                new_item_whd = item['length'], item['width'], item['height']
-                new_item_weight = item['weight']
-
-                packer_item = packer.add_new_item(
-                    new_item_whd, new_item_weight
+                (x, y, z), rotation_type = self.try_put_item(
+                    pallete, item
                 )
-                
-                _, unfitted_items = packer.pack()
-
-                if unfitted_items:
-                    raise ItemDoesntFitToPallete(pallete.id)
-
-                x, y, z = packer_item.position
-                item_model_instance.x = x
-                item_model_instance.y = y
-                item_model_instance.z = z
-                item_model_instance.rotate = bool(packer_item.rotation_type)
+                item.x = x
+                item.y = y
+                item.z = z
+                item.rotate = bool(rotation_type)
 
             # saving item 
-            item_model_instance.save()
+            item.save()
 
-        if item_from_temp:
-            temp_pallete = Pallete.objects.get(type__name='temp')
+        temp_pallete = Pallete.objects.get(type__name='temp')
+
+        # deleting item, which was placed from temp pallete
+        if item.from_temp:
             temp_pallete_item = temp_pallete.item_set.filter(
-                external_id=item['external_id']
+                external_id=item.external_id
             )
             temp_pallete_item.delete()
 
+        # trying to put item from temp pallete to other
+        try:
+            temp_item_id = self.try_put_top_item_from_temp_pallete(temp_pallete)
+            item.can_put_temp_item_id = temp_item_id
+        except:
+            pass
+
         item_response_serializer = ItemResponseSerializer(
-            instance=item_model_instance
+            instance=item
         )
         return Response(
             item_response_serializer.data, status=status.HTTP_201_CREATED
