@@ -226,7 +226,7 @@ class ItemViewSet(CreateListDestroyViewset):
 
         try:
             self.try_put_item(pallete, top_item)
-            return top_item.id
+            return top_item.external_id
         except:
             return
 
