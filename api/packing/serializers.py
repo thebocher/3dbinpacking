@@ -32,9 +32,6 @@ class ItemRequestSerializer(serializers.ModelSerializer):
 
 class ItemResponseSerializer(serializers.ModelSerializer):
     pallete_type = serializers.IntegerField(source='pallete.type.id')
-    can_put_temp_item_id = serializers.IntegerField(
-        source='can_put_temp_item_id', default=None
-    )
 
     class Meta:
         model = Item

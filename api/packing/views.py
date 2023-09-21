@@ -217,6 +217,10 @@ class ItemViewSet(CreateListDestroyViewset):
 
     def try_put_top_item_from_temp_pallete(self, temp_pallete):
         top_item = temp_pallete.get_top_item()
+
+        if top_item is None:
+            return
+        
         pallete = self.get_pallete(top_item)
 
         try:
@@ -229,9 +233,10 @@ class ItemViewSet(CreateListDestroyViewset):
         # validating
         serializer = ItemRequestSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        item: Item = serializer.instance
-
+        item_data = serializer.validated_data
+        item = Item(**item_data)
         pallete = self.get_pallete(item)
+        item.pallete = pallete
 
         if pallete.type.name == 'return':
             item.x = 0
@@ -243,9 +248,18 @@ class ItemViewSet(CreateListDestroyViewset):
                 # putting item on top of the highest item
                 # and in the center of pallete
                 top_item = pallete.get_top_item()
+
+                if top_item is None:
+                    item_z = 0
+                    item_height = 0
+                else:
+                    item_z = top_item.z
+                    item_height = top_item.height
+                
                 item.x = (pallete.length - item.length) / 2
                 item.y = (pallete.width - item.width) / 2
-                item.z = top_item.z + top_item.height
+                item.z = item_z + item_height
+                item.rotate = 0
             else:
                 # putting previous items and new item to packer and getting 
                 # position coordinates

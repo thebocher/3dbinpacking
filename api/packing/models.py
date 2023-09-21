@@ -36,7 +36,7 @@ class Pallete(models.Model):
 
     def get_top_item(self): 
         # used for temp pallete
-        items = self.item_set.objects.order_by('z')
+        items = self.item_set.order_by('z')
         return items.last()
 
 
