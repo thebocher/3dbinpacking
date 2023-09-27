@@ -206,18 +206,24 @@ class Bin:
 
                         # If not , get four vertices of the bottom of the item.
                         if support_area_upper / item_area_lower < self.support_surface_ratio :
-                            four_vertices = [[x,y],[x+float(w),y],[x,y+float(h)],[x+float(w),y+float(h)]]
-                            #  If any vertices is not supported, fit = False.
-                            c = [False,False,False,False]
-                            for i in self.fit_items:
-                                if z == i[5] :
-                                    for jdx,j in enumerate(four_vertices) :
-                                        if (i[0] <= j[0] <= i[1]) and (i[2] <= j[1] <= i[3]) :
-                                            c[jdx] = True
-                            if False in c :
-                                item.position = valid_item_position
-                                fit = False
-                                return fit
+                            fit = False
+                            return fit
+
+                            # REMOVED SUPPORT ON VERTICES CHECK
+
+                            # four_vertices = [[x,y],[x+float(w),y],[x,y+float(h)],[x+float(w),y+float(h)]]
+                            # #  If any vertices is not supported, fit = False.
+                            # c = [False,False,False,False]
+                            # for i in self.fit_items:
+                            #     print(i)
+                            #     if z == i[5] :
+                            #         for jdx,j in enumerate(four_vertices) :
+                            #             if (i[0] <= j[0] <= i[1]) and (i[2] <= j[1] <= i[3]) :
+                            #                 c[jdx] = True
+                            # if False in c :
+                            #     item.position = valid_item_position
+                            #     fit = False
+                            #     return fit
                         
                     self.fit_items = np.append(self.fit_items,np.array([[x,x+float(w),y,y+float(h),z,z+float(d)]]),axis=0)
                     item.position = [set2Decimal(x),set2Decimal(y),set2Decimal(z)]
