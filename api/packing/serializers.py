@@ -9,12 +9,6 @@ class PalleteTypeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PalleteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Pallete
-        fields = '__all__'
-
-
 class ActivePalleteSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=True)
 
@@ -40,3 +34,10 @@ class ItemResponseSerializer(serializers.ModelSerializer):
         model = Item
         fields = '__all__'
 
+
+class PalleteSerializer(serializers.ModelSerializer):
+    items = ItemResponseSerializer(source='item_set', many=True)
+
+    class Meta:
+        model = Pallete
+        fields = '__all__'
