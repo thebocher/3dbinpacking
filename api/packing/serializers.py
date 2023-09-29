@@ -36,7 +36,9 @@ class ItemResponseSerializer(serializers.ModelSerializer):
 
 
 class PalleteSerializer(serializers.ModelSerializer):
-    items = ItemResponseSerializer(source='item_set', many=True)
+    items = ItemResponseSerializer(
+        source='item_set', many=True, read_only=True
+    )
 
     class Meta:
         model = Pallete
